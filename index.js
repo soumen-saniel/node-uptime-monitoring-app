@@ -11,11 +11,14 @@ const server = http.createServer((req, res) => {
   const queryStringObject = parsedUrl.query
   // get the http method
   const method = req.method.toLowerCase()
+  // get the headers as an object
+  const headers = req.headers
   // send response
   res.end('Hello World!\n')
   console.log('Request recived on path', trimmedPath)
   console.log('with method:', method)
   console.log('and with parameters', queryStringObject)
+  console.log('and with headers', headers)
 })
 
 server.listen(3000, () => {
