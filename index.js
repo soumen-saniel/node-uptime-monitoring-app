@@ -1,7 +1,58 @@
 const http = require('http')
 const url = require('url')
 const StringDecoder = require('string_decoder').StringDecoder
-// request handlers
+
+// Initialize server
+const server = http.createServer((req, res) => {
+  // Get url and parse it
+  const parsedUrl = url.parse(req.url, true)
+  // Get path
+  const path = parsedUrl.pathname
+  // Cleaned path
+  const trimmedPath = path.replace(/^\/+|\/+$/g, '')
+  // Get query string as an object
+  const queryObject = parsedUrl.query
+  // Get the http method
+  const method = req.method.toLowerCase()
+  // Get headers
+  const headers = req.headers
+  // Get the payload, if any
+  const decoder = new StringDecoder('utf-8')
+  let buffer = ''
+  req.on('data', (data) => {
+    buffer += decoder.write(data)
+  })
+  req.on('end', () => {
+    buffer += decoder.end()
+    // Check for correct handler
+    const chosenHandler = typeof router[trimmedPath] !== 'undefined' ? router[trimmedPath] : handlers.notFound
+    // Construct the data object to be sent to handler
+    const data = {
+      trimmedPath: trimmedPath,
+      queryStringObject: queryObject,
+      method: method,
+      headers: headers,
+      buffer: buffer
+    }
+
+    chosenHandler(data, (statusCode, payload) => {
+      // Setting default status code
+      statusCode = typeof statusCode === 'number' ? statusCode : 200
+      // Setting default payload
+      payload = typeof payload === 'object' ? payload : {}
+      const payloadString = JSON.stringify(payload)
+      // Return response
+      console.log('Returning response', statusCode, payloadString)
+      res.writeHead(statusCode)
+      res.end(payloadString)
+    })
+
+    // console.log('parsedUrl', parsedUrl)
+    // console.log('method', method)
+  })
+})
+
+// Request handlers
 const handlers = {}
 handlers.sample = (data, callback) => {
   const statusCode = 200
@@ -12,60 +63,13 @@ handlers.notFound = (data, callback) => {
   const statusCode = 400
   callback(statusCode)
 }
-// defining router
+
+// Router
 const router = {
   sample: handlers.sample
 }
-// initialize the server
-const server = http.createServer((req, res) => {
-  // get url and parse it
-  const parsedUrl = url.parse(req.url, true)
-  // get path
-  const path = parsedUrl.pathname
-  const trimmedPath = path.replace(/^\/+|\/+$/g, '')
-  // get query string as an object
-  const queryStringObject = parsedUrl.query
-  // get the http method
-  const method = req.method.toLowerCase()
-  // get the headers as an object
-  const headers = req.headers
-  // get the payload, if any
-  const decoder = new StringDecoder('utf-8')
-  let buffer = ''
-  req.on('data', (data) => {
-    buffer += decoder.write(data)
-  })
-  req.on('end', () => {
-    buffer += decoder.end()
-    // check for correct handler
-    const chosenHandler = typeof router[trimmedPath] !== 'undefined' ? router[trimmedPath] : handlers.notFound
-    // construct the data object to send to handler
-    const data = {
-      trimmedPath: trimmedPath,
-      queryStringObject: queryStringObject,
-      method: method,
-      headers: headers,
-      buffer: buffer
-    }
 
-    chosenHandler(data, (statusCode, payload) => {
-      // setting default status code
-      statusCode = typeof statusCode === 'number' ? statusCode : 200
-      // setting default payload
-      payload = typeof payload === 'object' ? payload : {}
-      const payloadString = JSON.stringify(payload)
-      // return response
-      res.writeHead(statusCode)
-      res.end(payloadString)
-    })
-    console.log('Request recived on path:', trimmedPath)
-    console.log('with method:', method)
-    console.log('and with parameters:', queryStringObject)
-    console.log('and with headers:', headers)
-    console.log('and with payload:', buffer)
-  })
-})
-
-server.listen(3000, () => {
-  console.log('Server started on 3000')
+// Start server
+server.listen(8000, () => {
+  console.log('RUNNING SERVER ON PORT 8000')
 })
