@@ -1,7 +1,7 @@
 const http = require('http')
 const url = require('url')
 const StringDecoder = require('string_decoder').StringDecoder
-
+const config = require('./config')
 // Initialize server
 const server = http.createServer((req, res) => {
   // Get url and parse it
@@ -71,6 +71,6 @@ const router = {
 }
 
 // Start server
-server.listen(8000, () => {
-  console.log('RUNNING SERVER ON PORT 8000')
+server.listen(config.port, () => {
+  console.log('RUNNING SERVER ON PORT', config.port)
 })
