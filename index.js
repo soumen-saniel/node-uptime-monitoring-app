@@ -1,9 +1,28 @@
 const http = require('http')
+const https = require('https')
 const url = require('url')
 const StringDecoder = require('string_decoder').StringDecoder
 const config = require('./config')
-// Initialize server
-const server = http.createServer((req, res) => {
+const fs = require('fs')
+// Request handlers
+const handlers = {}
+handlers.sample = (data, callback) => {
+  const statusCode = 200
+  callback(statusCode, { name: 'sample handler' })
+}
+// Not found handler
+handlers.notFound = (data, callback) => {
+  const statusCode = 400
+  callback(statusCode)
+}
+
+// Router
+const router = {
+  sample: handlers.sample
+}
+
+// Server code
+const server = (req, res) => {
   // Get url and parse it
   const parsedUrl = url.parse(req.url, true)
   // Get path
@@ -51,26 +70,28 @@ const server = http.createServer((req, res) => {
     // console.log('parsedUrl', parsedUrl)
     // console.log('method', method)
   })
+}
+
+// Initialize http server
+const httpServer = http.createServer((req, res) => {
+  server(req, res)
 })
 
-// Request handlers
-const handlers = {}
-handlers.sample = (data, callback) => {
-  const statusCode = 200
-  callback(statusCode, { name: 'sample handler' })
+// Initialize http server
+const httpsServerOptions = {
+  key: fs.readFileSync('./https/key.pem'),
+  cert: fs.readFileSync('./https/cert.pem')
 }
-// Not found handler
-handlers.notFound = (data, callback) => {
-  const statusCode = 400
-  callback(statusCode)
-}
+const httpsServer = https.createServer(httpsServerOptions, (req, res) => {
+  server(req, res)
+})
 
-// Router
-const router = {
-  sample: handlers.sample
-}
+// Start http server
+httpServer.listen(config.httpPort, () => {
+  console.log('RUNNING HTTP SERVER ON PORT', config.httpPort)
+})
 
-// Start server
-server.listen(config.port, () => {
-  console.log('RUNNING SERVER ON PORT', config.port)
+// Start https server
+httpsServer.listen(config.httpsPort, () => {
+  console.log('RUNNING HTTPS SERVER ON PORT', config.httpsPort)
 })
