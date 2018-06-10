@@ -4,12 +4,16 @@ const url = require('url')
 const StringDecoder = require('string_decoder').StringDecoder
 const config = require('./config')
 const fs = require('fs')
+
 // Request handlers
 const handlers = {}
-handlers.sample = (data, callback) => {
+
+// Ping handler
+handlers.ping = (data, callback) => {
   const statusCode = 200
-  callback(statusCode, { name: 'sample handler' })
+  callback(statusCode)
 }
+
 // Not found handler
 handlers.notFound = (data, callback) => {
   const statusCode = 400
@@ -18,7 +22,7 @@ handlers.notFound = (data, callback) => {
 
 // Router
 const router = {
-  sample: handlers.sample
+  ping: handlers.ping
 }
 
 // Server code
