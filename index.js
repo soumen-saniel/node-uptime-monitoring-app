@@ -9,6 +9,24 @@ const url = require('url')
 const StringDecoder = require('string_decoder').StringDecoder
 const config = require('./config')
 const fs = require('fs')
+const handlers = require('./lib/handlers')
+const _data = require('./lib/data')
+
+// Create data
+// _data.create('test', 'test1', { 'hello': 'hi' }, function (err) {
+//   console.log('The error is ', err)
+// })
+
+// Read data
+// _data.read('test', 'test1', function (err, data) {
+//   console.log('The error is ', err)
+//   console.log('Data is ', data)
+// })
+
+// Update data
+_data.update('test', 'test1', { 'foo': 'bar' }, function (err) {
+  console.log('The error is ', err)
+})
 
 // Instantiating the http server
 const httpServer = http.createServer(function (req, res) {
@@ -93,20 +111,8 @@ const unifiedServer = function (req, res) {
   })
 }
 
-// Define the handlers
-const handlers = {}
-
-// Sample handler
-handlers.ping = function (data, callback) {
-  callback(200)
-}
-
-// Not found handler
-handlers.notFound = function (data, callback) {
-  callback(404)
-}
-
 // Define a request router
 const router = {
-  'ping': handlers.ping
+  'ping': handlers.ping,
+  'users': handlers.users
 }
